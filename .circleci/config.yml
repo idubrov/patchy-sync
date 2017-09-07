@@ -8,6 +8,7 @@ jobs:
       - run: yarn install
       - run: yarn run test
       - run: yarn run lint
+      - run: cd example && yarn install
       - run: cd example && yarn run lint
       - run:
           name: Save test results

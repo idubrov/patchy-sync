@@ -11,7 +11,7 @@
   "scripts": {
     "build": "babel src -d lib",
     "build:watch": "babel src -w -d lib",
-    "lint": "eslint src/**; exit 0",
+    "lint": "eslint src/**",
     "lint:watch": "eslint -w src/**",
     "prepublish": "npm run build",
     "test": "mocha test/ --reporter mocha-multi-reporters --reporter-options configFile=mocha-multi.json"
