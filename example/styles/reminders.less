@@ -1,0 +1,38 @@
+body {
+  font-size: 16px;
+  font-family: BlinkMacSystemFont, -apple-system, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", "Helvetica", "Arial", sans-serif;
+  font-weight: 100;
+
+  list-style: none;
+}
+
+.reminders {
+  max-width: 30em;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.lists {
+  &>h3 {
+    font-size: 1.2em;
+    border-bottom: 0.1em lightgrey solid;
+    margin-bottom: 2em;
+    text-align: center;
+    font-weight: 300;
+  }
+}
+
+.items {
+  &>h4 {
+    font-size: 1.2em;
+    font-weight: 300;
+    margin-bottom: 0.2em;
+  }
+
+  padding: 0.4em;
+  margin-top: 2em;
+
+  li {
+    padding: 0.2em 0 0.2em 0;
+  }
+}

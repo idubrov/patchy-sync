@@ -1,0 +1,19 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: circleci/node:6.11.2
+    steps:
+      - checkout
+      - run: yarn install
+      - run: yarn run test
+      - run: yarn run lint
+      - run: cd example && yarn run lint
+      - run:
+          name: Save test results
+          command: mkdir -p ~/junit/ && cp build/junit-report.xml ~/junit/
+          when: always
+      - store_test_results:
+          path: ~/junit
+      - store_artifacts:
+          path: ~/junit
