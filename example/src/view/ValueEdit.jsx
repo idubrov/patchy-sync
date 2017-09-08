@@ -1,12 +1,12 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import InlineEdit from 'react-edit-inline';
+import { RIEInput } from 'riek';
 import Context from './Context';
 
 const ValueEdit = ({ context }) =>
-  (<InlineEdit
-    text={context.value}
-    paramName="value"
+  (<RIEInput
+    value={context.value}
+    propName="value"
     change={({ value }) => context.patch([{ op: 'add', path: '', value }])}
   />);
 

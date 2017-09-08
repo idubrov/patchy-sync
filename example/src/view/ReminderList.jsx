@@ -1,5 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import { RIEInput } from 'riek';
 import ValueEdit from './ValueEdit';
 import Context from './Context';
 import ReminderItem from './ReminderItem';
@@ -7,9 +8,9 @@ import DeleteItem from './DeleteFromList';
 
 const ReminderList = ({ context }) => (<li>
   <section className="items">
-    <h4>
+    <h2>
       <ValueEdit context={context.into('title')} /><DeleteItem context={context} />
-    </h4>
+    </h2>
     <ul>
       {context.value.items.$order.map(itemId =>
         (<ReminderItem
@@ -17,6 +18,14 @@ const ReminderList = ({ context }) => (<li>
           context={context.into('items', itemId)}
         />)
       )}
+      <li>
+        <RIEInput
+          editing
+          value=""
+          propName="value"
+          change={({ value }) => console.log(`Adding new item ${value}`)}
+        />
+      </li>
     </ul>
   </section>
 </li>);

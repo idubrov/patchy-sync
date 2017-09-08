@@ -17,7 +17,7 @@ class RemindersList extends React.PureComponent {
     const context = new Context(this.props.document, this.props.patchDocument);
     return (<div className="reminders">
       <section className="lists">
-        <h3>Reminders</h3>
+        <h1>Reminders</h1>
         <ul>
           {this.props.document.lists.$order.map(listId =>
             (<ReminderList
