@@ -11,6 +11,7 @@ const DeleteFromListButton = ({ context }) =>
       const index = listContext.value.$order.indexOf(last);
       if (index !== -1) {
         listContext.patch([
+          // Check that we are deleting the correct one!
           { op: 'test', path: `$order/${index}`, value: last },
           { op: 'remove', path: `$order/${index}` },
           { op: 'remove', path: last }
