@@ -31,7 +31,7 @@ button:active {
   margin-right: auto;
 }
 
-.line-layout() {
+.item-line-layout() {
   display: flex;
   >span, input {
     display: inline-block;
@@ -44,12 +44,6 @@ button:active {
     font-size: 1em;
     font-weight: 300;
     padding: 0;
-  }
-
-  input.new {
-    margin: -0.125em;
-    border: 0.0625em lightgrey solid;
-    padding: 0.0625em;
   }
 
   >span {
@@ -77,7 +71,13 @@ button:active {
     font-size: 1.2em;
     font-weight: 300;
     margin-bottom: 0.2em;
-    .line-layout;
+    .item-line-layout;
+  }
+
+  input.new {
+    margin: -0.125em 1em -0.125em -0.125em;
+    border: 0.0625em lightgrey solid;
+    padding: 0.0625em;
   }
 
   padding: 0.4em;
@@ -85,6 +85,6 @@ button:active {
 
   li {
     padding: 0.2em 0 0.2em 0;
-    .line-layout;
+    .item-line-layout;
   }
 }

@@ -1,7 +1,9 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import uuid from 'uuid';
 import ReminderList from './ReminderList';
 import Context from './Context';
+import NewItemControl from './NewItemControl';
 
 class RemindersList extends React.PureComponent {
   static propTypes = {
@@ -11,6 +13,14 @@ class RemindersList extends React.PureComponent {
       }).isRequired
     }).isRequired,
     patchDocument: PropTypes.func.isRequired
+  };
+
+  handleNewList = (value) => {
+    const id = uuid.v4();
+    this.props.patchDocument([
+      { op: 'add', path: `/lists/${id}`, value: { title: value, items: { $order: [] } } },
+      { op: 'add', path: '/lists/$order/-', value: id }
+    ]);
   };
 
   render = () => {
@@ -25,6 +35,11 @@ class RemindersList extends React.PureComponent {
               context={context.into('lists', listId)}
             />)
           )}
+          <li>
+            <section className="items">
+              <NewItemControl onCreate={this.handleNewList} tagName="h2"/>
+            </section>
+          </li>
         </ul>
       </section>
     </div>);

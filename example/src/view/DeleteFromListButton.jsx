@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import Context from './Context';
 
-const DeleteFromList = ({ context }) =>
+const DeleteFromListButton = ({ context }) =>
   (<button
     className="delete-btn"
     onClick={() => {
@@ -21,8 +21,8 @@ const DeleteFromList = ({ context }) =>
     <i className="fa fa-trash-o" />
   </button>);
 
-DeleteFromList.propTypes = {
+DeleteFromListButton.propTypes = {
   context: PropTypes.instanceOf(Context).isRequired
 };
 
-export default DeleteFromList;
+export default DeleteFromListButton;
