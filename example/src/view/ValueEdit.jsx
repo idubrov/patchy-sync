@@ -7,6 +7,8 @@ const ValueEdit = ({ context }) =>
   (<RIEInput
     value={context.value}
     propName="value"
+    shouldBlockWhileLoading
+    classEditing="inline"
     change={({ value }) => context.patch([{ op: 'add', path: '', value }])}
   />);
 
