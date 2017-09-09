@@ -16,6 +16,11 @@
     "prepublish": "npm run build",
     "test": "mocha test/ --reporter mocha-multi-reporters --reporter-options configFile=mocha-multi.json"
   },
+  "dependencies": {
+    "isomorphic-fetch": "^2.2.1",
+    "jsonpatch": "^3.0.1",
+    "redux-saga": "^0.15.6"
+  },
   "devDependencies": {
     "babel-cli": "^6.26.0",
     "babel-core": "^6.26.0",
@@ -29,9 +34,5 @@
     "mocha": "^3.5.0",
     "mocha-junit-reporter": "^1.13.0",
     "mocha-multi-reporters": "^1.1.5"
-  },
-  "dependencies": {
-    "isomorphic-fetch": "^2.2.1",
-    "redux-saga": "^0.15.6"
   }
 }
