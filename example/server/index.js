@@ -11,7 +11,8 @@ const compiler = webpack(webpackConfig);
 
 const app = express();
 app.use(compression());
-app.use(bodyParser.json());
+app.use(bodyParser.json({ type: 'application/json' }));
+app.use(bodyParser.json({ type: 'application/json-patch+json' }));
 app.use(webpackDevMiddleware(compiler, {}));
 app.use(express.static(path.resolve(__dirname, '../public')));
 app.use('/documents', documents);

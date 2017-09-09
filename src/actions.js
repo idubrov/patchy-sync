@@ -4,6 +4,7 @@ export const MOUNT_DOCUMENT_COMPLETE = '@patchy/MOUNT_COMPLETE';
 export const UNMOUNT_DOCUMENT = '@patchy/UNMOUNT';
 export const PATCH_DOCUMENT = '@patchy/PATCH';
 export const PATCH_DOCUMENT_COMPLETE = '@patchy/PATCH_COMPLETE';
+export const PATCH_DOCUMENT_FAILED = '@patchy/PATCH_FAILED';
 
 let nextTransactionId = 1;
 
@@ -55,5 +56,16 @@ export const patchDocumentComplete = (key, txid, revision, data) => ({
     txid,
     revision,
     data
+  }
+});
+
+export const patchDocumentFailed = (key, txid, revision, data, error) => ({
+  type: PATCH_DOCUMENT_FAILED,
+  payload: {
+    key,
+    txid,
+    revision,
+    data,
+    error
   }
 });

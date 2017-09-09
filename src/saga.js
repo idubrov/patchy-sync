@@ -1,10 +1,13 @@
-import { call, put, take, actionChannel } from 'redux-saga/effects';
+import { call, put, take, select, actionChannel } from 'redux-saga/effects';
 import { buffers } from 'redux-saga';
 import fetch from 'isomorphic-fetch';
-import { MOUNT_DOCUMENT, mountDocumentComplete } from './actions';
+import appendQuery from 'append-query';
+import {
+  MOUNT_DOCUMENT, mountDocumentComplete, PATCH_DOCUMENT, patchDocumentComplete,
+  patchDocumentFailed
+} from './actions';
 
 // TODO: custom headers, credentials?
-
 function processResponse(response) {
   const contentType = response.headers.get('Content-Type');
   const responseData = contentType && contentType.indexOf('application/json') !== -1
@@ -29,13 +32,29 @@ function processResponse(response) {
   });
 }
 
-function mountRequest(action) {
-  const { url } = action.payload;
-  return fetch(url).then(processResponse);
+function mountRequest(action, state) {
+  return fetch(state.url).then(processResponse);
 }
 
-export default function* patchySaga() {
-  const actionPattern = action => action.type === MOUNT_DOCUMENT;
+function patchRequest(action, state) {
+  // Specify which "remote" revision we have so far, so server knows how many patches to return
+  const url = appendQuery(state.url, { revision: state.remoteRevision }, { removeNull: true });
+  return fetch(url, {
+    headers: {
+      'Content-Type': 'application/json-patch+json'
+    },
+    method: 'PATCH',
+    body: JSON.stringify(action.payload.patch)
+  }).then(processResponse);
+}
+
+export default function* patchySaga(selector) {
+  const stateSelector = typeof selector === 'function'
+    ? selector
+    : state => state[selector];
+  const actionPattern = action =>
+    (action.type === MOUNT_DOCUMENT || action.type === PATCH_DOCUMENT);
+
   // We want to process actions sequentially
   // TODO: should we run separate documents via separate channels?
   const chan = yield actionChannel(actionPattern, buffers.expanding());
@@ -43,12 +62,27 @@ export default function* patchySaga() {
     const action = yield take(chan);
     const { key, txid } = action.payload;
 
+    const patchyState = yield select(state => stateSelector(state)[key]);
     try {
-      const { data, revision } = yield call(mountRequest, action);
-      const mountComplete = mountDocumentComplete(key, txid, revision, data);
-      yield put(mountComplete);
+      const requestHandler = action.type === PATCH_DOCUMENT
+        ? patchRequest
+        : mountRequest;
+      const responseHandler = action.type === PATCH_DOCUMENT
+        ? patchDocumentComplete
+        : mountDocumentComplete;
+      const { data, revision } = yield call(requestHandler, action, patchyState);
+      const completeAction = responseHandler(key, txid, revision, data);
+      yield put(completeAction);
     } catch (err) {
-      // FIXME: handle errors...
+      if (action.type === PATCH_DOCUMENT &&
+          typeof err.data !== 'undefined' &&
+          typeof err.revision !== 'undefined') {
+        yield put(patchDocumentFailed(key, txid,
+          err.revision, err.data, err.message || err));
+      } else {
+        console.error('Unexpected error', err);
+        // FIXME: handle errors for mount?...
+      }
     }
   }
 }

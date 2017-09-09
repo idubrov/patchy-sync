@@ -13,7 +13,7 @@ const reducer = combineReducers({
 const sagaMiddleware = createSagaMiddleware();
 const store = createStore(reducer, composeWithDevTools(applyMiddleware(sagaMiddleware)));
 sagaMiddleware.run(remindersSaga);
-sagaMiddleware.run(patchySaga);
+sagaMiddleware.run(patchySaga, 'patchy');
 
 const Root = (<Provider store={store}>
   <App />
