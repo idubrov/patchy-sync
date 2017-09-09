@@ -34,7 +34,7 @@ class NewItemControl extends React.PureComponent {
         onChange={e => this.setState({ newItem: e.target.value })}
         onKeyDown={this.handleKeyDown}
       />
-      <button onClick={this.handleCreateItem}>
+      <button className="add-btn" onClick={this.handleCreateItem}>
         <i className="fa fa-plus" />
       </button>
     </Tag>);
