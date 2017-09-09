@@ -45,7 +45,6 @@ describe('patchy-sync reducer tests', () => {
         pending: [],
         local: { title: 'Second document' },
         remote: { title: 'Second document' },
-        localRevision: 2,
         remoteRevision: 2,
         url: 'http://example.com/2'
       }
