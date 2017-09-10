@@ -31,7 +31,9 @@ router.get('/:key', (req, res) => {
   res.set('X-Revision', doc.revision);
   res.set('ETag', doc.etag);
   res.set('Last-Modified', doc.lastModified);
-  res.set('Expires', '0');
+  res.set('Cache-Control', 'max-age=0, must-revalidate');
+  res.set('Expires', 'Tue, 01 Jan 1980 1:00:00 GMT');
+
   res.status(200);
   res.json(doc.current);
 });
