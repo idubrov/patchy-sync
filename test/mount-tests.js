@@ -1,5 +1,8 @@
 import reducer from '../src/reducer';
-import { mountDocument, mountDocumentComplete, unmountDocument, _resetTxid } from '../src/actions';
+import {
+  mountDocument, mountDocumentComplete, unmountDocument, patchDocumentComplete,
+  _resetTxid
+} from '../src/actions';
 
 describe('patchy-sync reducer tests', () => {
   beforeEach(() => {
@@ -11,6 +14,7 @@ describe('patchy-sync reducer tests', () => {
     const state = reducer(undefined, action);
     state.should.deep.equals({
       somekey: {
+        pending: [],
         mounting: action.payload.txid,
         url: 'http://example.com/1'
       }
@@ -23,6 +27,7 @@ describe('patchy-sync reducer tests', () => {
     const state = [firstAction, secondAction].reduce(reducer, undefined);
     state.should.deep.equals({
       somekey: {
+        pending: [],
         mounting: secondAction.payload.txid,
         url: 'http://example.com/2'
       }
@@ -68,5 +73,35 @@ describe('patchy-sync reducer tests', () => {
       mountDocumentComplete('somekey', firstAction.payload.txid, 1, { title: 'First document' })
     ].reduce(reducer, undefined);
     state.should.deep.equals({ });
+  });
+
+  it('patch complete should be ignored after mount', () => {
+    const firstAction = mountDocument('somekey', 'http://example.com/1');
+    const secondAction = patchDocumentComplete('somekey', 99, 14, {
+      patches: [
+        [{ op: 'add', path: '/title', value: 'hello' }]
+      ]
+    });
+    const state = [firstAction, secondAction].reduce(reducer, undefined);
+    state.should.deep.equals({
+      somekey: {
+        pending: [],
+        mounting: firstAction.payload.txid,
+        url: 'http://example.com/1'
+      }
+    });
+  });
+
+  it('mount document complete should be ignored after mount', () => {
+    const firstAction = mountDocument('somekey', 'http://example.com/1');
+    const secondAction = mountDocumentComplete('somekey', 99, 2, { title: 'Second document' });
+    const state = [firstAction, secondAction].reduce(reducer, undefined);
+    state.should.deep.equals({
+      somekey: {
+        pending: [],
+        mounting: firstAction.payload.txid,
+        url: 'http://example.com/1'
+      }
+    });
   });
 });

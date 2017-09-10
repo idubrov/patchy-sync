@@ -1,88 +1,74 @@
-import { call, put, take, select, actionChannel } from 'redux-saga/effects';
+import { call, put, take, select, actionChannel, fork, cancel } from 'redux-saga/effects';
 import { buffers } from 'redux-saga';
-import fetch from 'isomorphic-fetch';
-import appendQuery from 'append-query';
+import simpleClient from './simpleClient';
 import {
   MOUNT_DOCUMENT, mountDocumentComplete, PATCH_DOCUMENT, patchDocumentComplete,
-  patchDocumentFailed
+  patchDocumentFailed, UNMOUNT_DOCUMENT
 } from './actions';
 
-// TODO: custom headers, credentials?
-function processResponse(response) {
-  const contentType = response.headers.get('Content-Type');
-  const responseData = contentType && contentType.indexOf('application/json') !== -1
-    ? response.json()
-    : response.text();
-  const revisionStr = response.headers.get('X-Revision');
-  const revision = revisionStr !== null
-    ? parseInt(revisionStr, 10)
-    : undefined;
-  if (revision === undefined) {
-    console.warn('Cannot get X-Revision header from the response. ' +
-      'Check that CORS is properly configured on the server');
-  }
-  if (response.ok) {
-    return responseData.then(data => ({ data, revision }));
-  }
-  return responseData.then((data) => {
-    const error = new Error(response.statusText);
-    error.data = data;
-    error.revision = revision;
-    throw error;
-  });
+
+function* loadDocument(stateSelector, client, mountAction) {
+  const { key, txid } = mountAction.payload;
+
+  // First, load the document
+  const get = client.get.bind(client);
+  const patchyState = yield select(state => stateSelector(state)[key]);
+  const { data, revision } = yield call(get, mountAction, patchyState);
+  // FIXME: errors for mounts?
+  yield put(mountDocumentComplete(key, txid, revision, data));
 }
 
-function mountRequest(action, state) {
-  return fetch(state.url).then(processResponse);
-}
+function* documentSaga(stateSelector, client, mountAction) {
+  yield loadDocument(stateSelector, client, mountAction);
 
-function patchRequest(action, state) {
-  // Specify which "remote" revision we have so far, so server knows how many patches to return
-  const url = appendQuery(state.url, { revision: state.remoteRevision }, { removeNull: true });
-  return fetch(url, {
-    headers: {
-      'Content-Type': 'application/json-patch+json'
-    },
-    method: 'PATCH',
-    body: JSON.stringify(action.payload.patch)
-  }).then(processResponse);
-}
+  const patch = client.patch.bind(client);
+  const key = mountAction.payload.key;
+  const actionPattern = action => action.type === PATCH_DOCUMENT && action.payload.key === key;
 
-export default function* patchySaga(selector) {
-  const stateSelector = typeof selector === 'function'
-    ? selector
-    : state => state[selector];
-  const actionPattern = action =>
-    (action.type === MOUNT_DOCUMENT || action.type === PATCH_DOCUMENT);
-
-  // We want to process actions sequentially
-  // TODO: should we run separate documents via separate channels?
+  // We want to process patch actions sequentially, so buffer them
   const chan = yield actionChannel(actionPattern, buffers.expanding());
   while (true) {
     const action = yield take(chan);
-    const { key, txid } = action.payload;
+    const { txid } = action.payload;
 
     const patchyState = yield select(state => stateSelector(state)[key]);
     try {
-      const requestHandler = action.type === PATCH_DOCUMENT
-        ? patchRequest
-        : mountRequest;
-      const responseHandler = action.type === PATCH_DOCUMENT
-        ? patchDocumentComplete
-        : mountDocumentComplete;
-      const { data, revision } = yield call(requestHandler, action, patchyState);
-      const completeAction = responseHandler(key, txid, revision, data);
-      yield put(completeAction);
+      const { data, revision } = yield call(patch, action, patchyState);
+      yield put(patchDocumentComplete(key, txid, revision, data));
     } catch (err) {
-      if (action.type === PATCH_DOCUMENT &&
-          typeof err.data !== 'undefined' &&
+      if (typeof err.data !== 'undefined' &&
           typeof err.revision !== 'undefined') {
         yield put(patchDocumentFailed(key, txid,
           err.revision, err.data, err.message || err));
       } else {
         console.error('Unexpected error', err);
-        // FIXME: handle errors for mount?...
       }
+    }
+  }
+}
+
+export default function* patchySaga(selector, client = simpleClient) {
+  const stateSelector = typeof selector === 'function'
+    ? selector
+    : state => state[selector];
+
+  const sagas = new Map();
+  while (true) {
+    const action = yield take(MOUNT_DOCUMENT, UNMOUNT_DOCUMENT);
+    const { key } = action.payload;
+    if (sagas.has(key)) {
+      // Terminate old worker. We don't need to care (much) for race conditions -- all events
+      // emitted by cancelled worker will be discarded by reducer (as state is immediately
+      // reset on MOUNT_DOCUMENT).
+      // However, we should never initiate two PATCH requests on the same action, which
+      // should be ensured by 'cancel'.
+      yield cancel(sagas.get(key));
+      sagas.delete(key);
+    }
+
+    if (action.type === MOUNT_DOCUMENT) {
+      const worker = yield fork(documentSaga, stateSelector, client, action);
+      sagas.set(key, worker);
     }
   }
 }

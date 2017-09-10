@@ -7,6 +7,7 @@ import {
 function handleMount(state, action) {
   const { url, txid } = action.payload;
   return ({
+    pending: [],
     mounting: txid,
     url
   });
