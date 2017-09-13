@@ -2,7 +2,7 @@
   "name": "patchy-sync",
   "author": "Ivan Dubrov",
   "license": "MIT",
-  "version": "0.0.0",
+  "version": "0.2.0",
   "description": "Simple library for syncing state in Redux with server.",
   "main": "lib/index.js",
   "repository": "https://github.com/idubrov/patchy-sync",
