@@ -12,7 +12,8 @@ class RemindersList extends React.PureComponent {
         $order: PropTypes.arrayOf(PropTypes.string).isRequired
       }).isRequired
     }).isRequired,
-    patchDocument: PropTypes.func.isRequired
+    patchDocument: PropTypes.func.isRequired,
+    pending: PropTypes.bool.isRequired
   };
 
   handleNewList = (value) => {
@@ -27,7 +28,7 @@ class RemindersList extends React.PureComponent {
     const context = new Context(this.props.document, this.props.patchDocument);
     return (<div className="reminders">
       <section className="lists">
-        <h1>Reminders</h1>
+        <h1>Reminders{this.props.pending ? ' Saving...' : ''}</h1>
         <ul>
           {this.props.document.lists.$order.map(listId =>
             (<ReminderList
@@ -37,7 +38,7 @@ class RemindersList extends React.PureComponent {
           )}
           <li>
             <section className="items">
-              <NewItemControl onCreate={this.handleNewList} tagName="h2"/>
+              <NewItemControl onCreate={this.handleNewList} tagName="h2" />
             </section>
           </li>
         </ul>

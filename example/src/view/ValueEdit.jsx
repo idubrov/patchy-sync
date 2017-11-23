@@ -9,7 +9,7 @@ const ValueEdit = ({ context }) =>
     propName="value"
     shouldBlockWhileLoading
     classEditing="inline"
-    change={({ value }) => context.patch([{ op: 'add', path: '', value }])}
+    change={({ value }) => context.patch([{ op: 'test', path: '', value: context.value }, { op: 'add', path: '', value }])}
   />);
 
 ValueEdit.propTypes = {
