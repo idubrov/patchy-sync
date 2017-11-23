@@ -2,6 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { RIEInput } from 'riek';
 import Context from './Context';
+import sameContextValue from './sameContextValue';
 
 const ValueEdit = ({ context }) =>
   (<RIEInput
@@ -16,4 +17,4 @@ ValueEdit.propTypes = {
   context: PropTypes.instanceOf(Context).isRequired
 };
 
-export default ValueEdit;
+export default sameContextValue(ValueEdit);
